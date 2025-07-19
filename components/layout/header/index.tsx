@@ -1,4 +1,6 @@
-import React from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+import React, { useEffect } from "react";
 import { MdNoteAlt } from "react-icons/md";
 import Container from "../container";
 import { ModeToggle } from "./toggle-mode";
@@ -7,8 +9,25 @@ import Notification from "./notification";
 import UserButton from "./user-button";
 import Link from "next/link";
 import { Button } from "../../ui/button";
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
+  const session = useSession();
+  const isLoggedIn = session.status === "authenticated";
+  const path = usePathname();
+
+  useEffect(() => {
+    if (!isLoggedIn && path) {
+      const updateSession = async () => {
+        await session.update();
+      };
+      updateSession();
+    }
+  }, [isLoggedIn, path]);
+
+  console.log(session);
+
   return (
     <nav className="sticky top-0 border-b z-50">
       <Container>
@@ -20,15 +39,19 @@ const Navbar = () => {
           <SearchField />
           <div className="flex gap-5 sm:gap-8 items-center">
             <ModeToggle />
-            <Notification />
-            <UserButton />
-            <Link href={"/login"} className="hidden sm:inline-block">
-              Login
-            </Link>
+            {isLoggedIn && <Notification />}
+            {isLoggedIn && <UserButton />}
+            {!isLoggedIn && (
+              <>
+                <Link href={"/login"} className="hidden sm:inline-block">
+                  Login
+                </Link>
 
-            <Button variant={"link"} asChild>
-              <Link href={"/register"}>Register</Link>
-            </Button>
+                <Button variant={"link"} asChild>
+                  <Link href={"/register"}>Register</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </Container>

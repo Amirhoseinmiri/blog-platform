@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import FormField from "../common/form-field";
 import { Button } from "../ui/button";
@@ -10,6 +10,10 @@ import {
   RegisterSchema,
   RegisterSchemaType,
 } from "../../schemas/registerSchema";
+import { signUp } from "../../actions/auth/register";
+import Alert from "../common/Alert";
+import { useRouter } from "next/navigation";
+import { LOGIN_REDIRECT } from "../../route";
 
 const RegisterForm = () => {
   const {
@@ -19,10 +23,31 @@ const RegisterForm = () => {
   } = useForm<RegisterSchemaType>({
     resolver: zodResolver(RegisterSchema),
   });
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [error, setError] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const onSubmit = (data: RegisterSchemaType) => {
-    console.log("Form submitted with data:", data);
-    // Handle login logic here
+    setSuccess(undefined);
+    setError(undefined);
+    startTransition(() => {
+      signUp(data)
+        .then((response) => {
+          if (response.error) {
+            setError(response.error);
+            setSuccess(undefined);
+          } else {
+            setSuccess(response.success);
+            setError(undefined);
+            router.push(LOGIN_REDIRECT);
+          }
+        })
+        .catch((err) => {
+          console.error("Registration error:", err);
+          setError(err || "An unexpected error occurred");
+        });
+    });
   };
 
   return (
@@ -60,8 +85,11 @@ const RegisterForm = () => {
         {...register("confirmPassword")}
       />
 
-      <Button type="submit" className="w-full">
-        Register
+      {success && <Alert success message={success} />}
+      {error && <Alert error message={error} />}
+
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "Creating account..." : "Create Account"}
       </Button>
       <div className="flex justify-center my-2">Or</div>
       <SocialAuth />

@@ -1,14 +1,22 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
 import { useForm } from "react-hook-form";
 import { LoginSchema, LoginSchemaType } from "../../schemas/loginSchema";
 import FormField from "../common/form-field";
 import { Button } from "../ui/button";
 import Heading from "../common/heading";
 import SocialAuth from "./social-auth";
+import { login } from "../../actions/auth/login";
+import React, { useState, useTransition } from "react";
+import Alert from "../common/Alert";
+import { useRouter } from "next/navigation";
+import { LOGIN_REDIRECT } from "../../route";
 
 const LoginForm = () => {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>("");
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -18,8 +26,20 @@ const LoginForm = () => {
   });
 
   const onSubmit = (data: LoginSchemaType) => {
-    console.log("Form submitted with data:", data);
-    // Handle login logic here
+    startTransition(() => {
+      login(data)
+        .then((response) => {
+          if (response?.error) {
+            setError(response.error);
+          }
+          if (!response?.error) {
+            router.push(LOGIN_REDIRECT);
+          }
+        })
+        .catch((err) => {
+          console.error("Login error:", err);
+        });
+    });
   };
 
   return (
@@ -30,6 +50,7 @@ const LoginForm = () => {
       <Heading center lg title="Login to WEBDEV.blog" />
       <FormField
         label="Email"
+        disabled={isPending}
         type="email"
         error={errors.email?.message}
         {...register("email")}
@@ -37,11 +58,14 @@ const LoginForm = () => {
       <FormField
         label="Password"
         type="password"
+        disabled={isPending}
         error={errors.password?.message}
         {...register("password")}
       />
-      <Button type="submit" className="w-full">
-        Login
+      {error && <Alert error message={error} />}
+
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "Logging in..." : "Login"}
       </Button>
       <div className="flex justify-center my-2">Or</div>
       <SocialAuth />

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
   User,
   UserRound,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 const UserButton = () => {
   return (
     <div>
@@ -52,7 +54,10 @@ const UserButton = () => {
             </button>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <button className="w-full flex items-center gap-2">
+            <button
+              className="w-full flex items-center gap-2"
+              onClick={() => signOut()}
+            >
               <LogOut size={18} />
               Sign Out
             </button>
