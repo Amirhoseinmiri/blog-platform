@@ -4,6 +4,10 @@ import { signIn } from "../../auth";
 import { LOGIN_REDIRECT } from "../../route";
 import { AuthError } from "next-auth";
 import { LoginSchema, LoginSchemaType } from "../../schemas/loginSchema";
+import {
+  generateEmailVerificationToken,
+  sendEmailVerification,
+} from "../../lib/email-verification";
 
 export const login = async (formData: LoginSchemaType) => {
   const validatedField = LoginSchema.safeParse(formData);
@@ -23,11 +27,21 @@ export const login = async (formData: LoginSchemaType) => {
     };
   }
 
-  //   if (!user.emailVerified) {
-  //     return {
-  //       error: "email not varified",
-  //     };
-  //   }
+  if (!user.emailVerified) {
+    const emailVerificationToken = await generateEmailVerificationToken(
+      user.email
+    );
+    const { error } = await sendEmailVerification(
+      email,
+      emailVerificationToken.token
+    );
+
+    if (error) {
+      return {
+        error: "failed to send email verification",
+      };
+    }
+  }
 
   try {
     await signIn("credentials", {
