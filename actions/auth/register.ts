@@ -7,6 +7,10 @@ import {
 import bcrypt from "bcryptjs";
 import { db } from "../../lib/db";
 import { getUserByEmail } from "../../lib/user";
+import {
+  generateEmailVerificationToken,
+  sendEmailVerification,
+} from "../../lib/email-verification";
 
 export const signUp = async (formData: RegisterSchemaType) => {
   const validatedField = RegisterSchema.safeParse(formData);
@@ -34,6 +38,18 @@ export const signUp = async (formData: RegisterSchemaType) => {
       password: hashedPass,
     },
   });
+
+  const emailVerificationToken = await generateEmailVerificationToken(email);
+  const { error } = await sendEmailVerification(
+    email,
+    emailVerificationToken.token
+  );
+
+  if (error) {
+    return {
+      error: "failed to send email verification",
+    };
+  }
 
   return {
     success: "user created successfully",

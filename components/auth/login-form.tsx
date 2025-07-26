@@ -9,12 +9,13 @@ import SocialAuth from "./social-auth";
 import { login } from "../../actions/auth/login";
 import React, { useState, useTransition } from "react";
 import Alert from "../common/Alert";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LOGIN_REDIRECT } from "../../route";
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   const {
@@ -42,6 +43,13 @@ const LoginForm = () => {
     });
   };
 
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already linked to another account"
+      : searchParams.get("error") === "Configuration"
+      ? "Invalid configuration"
+      : "";
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -63,6 +71,7 @@ const LoginForm = () => {
         {...register("password")}
       />
       {error && <Alert error message={error} />}
+      {urlError && <Alert error message={urlError} />}
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "Logging in..." : "Login"}
