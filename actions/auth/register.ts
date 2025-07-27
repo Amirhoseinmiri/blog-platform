@@ -12,46 +12,43 @@ import {
   sendEmailVerification,
 } from "../../lib/email-verification";
 
-export const signUp = async (formData: RegisterSchemaType) => {
-  const validatedField = RegisterSchema.safeParse(formData);
-  if (!validatedField.success) {
-    return {
-      error: "invalid field",
-    };
+export const signUp = async (values: RegisterSchemaType) => {
+  const validateFields = RegisterSchema.safeParse(values);
+
+  if (!validateFields.success) {
+    return { error: "Invalid fields!" };
   }
 
-  const { name, email, password } = validatedField.data;
+  const { name, email, password } = validateFields.data;
 
   const user = await getUserByEmail(email);
+
   if (user) {
-    return {
-      error: "user already exists",
-    };
+    return { error: "Email already in use!" };
   }
 
-  const hashedPass = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   await db.user.create({
     data: {
       name,
       email,
-      password: hashedPass,
+      password: hashedPassword,
     },
   });
 
   const emailVerificationToken = await generateEmailVerificationToken(email);
   const { error } = await sendEmailVerification(
-    email,
+    emailVerificationToken.email,
     emailVerificationToken.token
   );
 
   if (error) {
     return {
-      error: "failed to send email verification",
+      error:
+        "Something went wrong while sending verification email! Try to login to resend the verification email!",
     };
   }
 
-  return {
-    success: "user created successfully",
-  };
+  return { success: "Verification email sent!" };
 };

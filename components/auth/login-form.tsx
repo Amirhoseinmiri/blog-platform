@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { LoginSchema, LoginSchemaType } from "../../schemas/loginSchema";
 import FormField from "../common/form-field";
 import { Button } from "../ui/button";
@@ -14,6 +14,7 @@ import { LOGIN_REDIRECT } from "../../route";
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
+  const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | undefined>("");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -26,20 +27,23 @@ const LoginForm = () => {
     resolver: zodResolver(LoginSchema),
   });
 
-  const onSubmit = (data: LoginSchemaType) => {
+  const onSubmit: SubmitHandler<LoginSchemaType> = (data) => {
+    setError("");
     startTransition(() => {
-      login(data)
-        .then((response) => {
-          if (response?.error) {
-            setError(response.error);
-          }
-          if (!response?.error) {
-            router.push(LOGIN_REDIRECT);
-          }
-        })
-        .catch((err) => {
-          console.error("Login error:", err);
-        });
+      login(data).then((res) => {
+        if (res?.error) {
+          router.replace("/login");
+          setError(res.error);
+        }
+
+        if (!res?.error) {
+          router.push(LOGIN_REDIRECT);
+        }
+
+        if (res?.success) {
+          setSuccess(res.success);
+        }
+      });
     });
   };
 
@@ -47,8 +51,8 @@ const LoginForm = () => {
     searchParams.get("error") === "OAuthAccountNotLinked"
       ? "Email already linked to another account"
       : searchParams.get("error") === "Configuration"
-      ? "Invalid configuration"
-      : "";
+        ? "Invalid configuration"
+        : "";
 
   return (
     <form
@@ -71,6 +75,7 @@ const LoginForm = () => {
         {...register("password")}
       />
       {error && <Alert error message={error} />}
+      {success && <Alert success message={success} />}
       {urlError && <Alert error message={urlError} />}
 
       <Button type="submit" className="w-full" disabled={isPending}>

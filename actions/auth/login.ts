@@ -9,38 +9,39 @@ import {
   sendEmailVerification,
 } from "../../lib/email-verification";
 
-export const login = async (formData: LoginSchemaType) => {
-  const validatedField = LoginSchema.safeParse(formData);
-  if (!validatedField.success) {
-    return {
-      error: "invalid field",
-    };
+export const login = async (values: LoginSchemaType) => {
+  const validateFields = LoginSchema.safeParse(values);
+
+  if (!validateFields.success) {
+    return { error: "Invalid fields!" };
   }
 
-  const { email, password } = validatedField.data;
+  const { email, password } = validateFields.data;
 
   const user = await getUserByEmail(email);
 
   if (!user || !email || !password || !user.password) {
-    return {
-      error: "Invalid Credentials",
-    };
+    return { error: "Invalid credetials" };
   }
 
   if (!user.emailVerified) {
     const emailVerificationToken = await generateEmailVerificationToken(
       user.email
     );
+
     const { error } = await sendEmailVerification(
-      email,
+      emailVerificationToken.email,
       emailVerificationToken.token
     );
 
     if (error) {
       return {
-        error: "failed to send email verification",
+        error:
+          "Something went wrong while sending verification email! Try to login to resend the verification email!",
       };
     }
+
+    return { success: "Verification email sent!" };
   }
 
   try {
@@ -53,13 +54,9 @@ export const login = async (formData: LoginSchemaType) => {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return {
-            error: "Invalid email or password",
-          };
+          return { error: "Invalid credetials!" };
         default:
-          return {
-            error: "An unexpected error occurred during sign-in",
-          };
+          return { error: "Something went wrong!" };
       }
     }
   }

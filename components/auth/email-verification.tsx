@@ -1,3 +1,4 @@
+"use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { verifyEmail } from "../../actions/auth/email-verification";
@@ -29,7 +30,7 @@ const EmailVerificationClient = () => {
   }, [token]);
 
   return (
-    <div>
+    <div className="border-2 rounded-md p-2 flex flex-col items-center mx-auto max-w-[400px] my-8">
       <Heading title="WEBDEV.blog" center />
       {loading && <p>Loading...</p>}
       {success && <Alert success message={success} />}

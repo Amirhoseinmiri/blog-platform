@@ -1,7 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import FormField from "../common/form-field";
 import { Button } from "../ui/button";
 import Heading from "../common/heading";
@@ -12,8 +12,6 @@ import {
 } from "../../schemas/registerSchema";
 import { signUp } from "../../actions/auth/register";
 import Alert from "../common/Alert";
-import { useRouter } from "next/navigation";
-import { LOGIN_REDIRECT } from "../../route";
 
 const RegisterForm = () => {
   const {
@@ -26,27 +24,15 @@ const RegisterForm = () => {
   const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
-  const onSubmit = (data: RegisterSchemaType) => {
-    setSuccess(undefined);
-    setError(undefined);
+  const onSubmit: SubmitHandler<RegisterSchemaType> = (data) => {
+    setSuccess("");
+    setError("");
     startTransition(() => {
-      signUp(data)
-        .then((response) => {
-          if (response.error) {
-            setError(response.error);
-            setSuccess(undefined);
-          } else {
-            setSuccess(response.success);
-            setError(undefined);
-            router.push(LOGIN_REDIRECT);
-          }
-        })
-        .catch((err) => {
-          console.error("Registration error:", err);
-          setError(err || "An unexpected error occurred");
-        });
+      signUp(data).then((res) => {
+        setError(res.error);
+        setSuccess(res.success);
+      });
     });
   };
 
