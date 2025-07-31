@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../provider";
 import Navbar from "@/components/layout/header";
@@ -8,12 +7,6 @@ import { SessionProvider } from "next-auth/react";
 import { SocketContextProvider } from "../context/SocketContext";
 import { EdgeStoreProvider } from "../lib/edgestore";
 import { Toaster } from "react-hot-toast";
-
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Web Dev Blog",
@@ -35,9 +28,7 @@ export default async function RootLayout({
       <SessionProvider session={session}>
         <SocketContextProvider>
           <html lang="en" suppressHydrationWarning>
-            <body
-              className={`${poppins.variable} flex flex-col min-h-screen px-2 antialiased`}
-            >
+            <body className={`flex flex-col min-h-screen px-2 antialiased`}>
               {" "}
               <Toaster
                 position="bottom-center"
