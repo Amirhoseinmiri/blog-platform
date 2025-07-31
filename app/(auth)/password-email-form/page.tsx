@@ -1,13 +1,12 @@
-import React from "react";
-import Container from "../../../components/layout/container";
-import PasswordReset from "../../../components/auth/password-reset";
+import PasswordEmailForm from "@/components/auth/PasswordEmailForm";
+import Container from "@/components/layout/container";
 
-const PasswordResetPage = () => {
+const PasswordEmailPage = () => {
   return (
     <Container>
-      <PasswordReset />
+      <PasswordEmailForm />
     </Container>
   );
 };
 
-export default PasswordResetPage;
+export default PasswordEmailPage;

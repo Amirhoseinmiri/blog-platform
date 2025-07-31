@@ -6,8 +6,8 @@ import { AuthError } from "next-auth";
 import { LoginSchema, LoginSchemaType } from "../../schemas/loginSchema";
 import {
   generateEmailVerificationToken,
-  sendEmailVerification,
-} from "../../lib/email-verification";
+  sendEmailVerificationToken,
+} from "../../lib/emailVerification";
 
 export const login = async (values: LoginSchemaType) => {
   const validateFields = LoginSchema.safeParse(values);
@@ -29,7 +29,7 @@ export const login = async (values: LoginSchemaType) => {
       user.email
     );
 
-    const { error } = await sendEmailVerification(
+    const { error } = await sendEmailVerificationToken(
       emailVerificationToken.email,
       emailVerificationToken.token
     );

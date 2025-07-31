@@ -1,16 +1,16 @@
 "use server";
 
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
+import { getUserByEmail } from "@/lib/user";
+import {
+  generateEmailVerificationToken,
+  sendEmailVerificationToken,
+} from "@/lib/emailVerification";
 import {
   RegisterSchema,
   RegisterSchemaType,
 } from "../../schemas/registerSchema";
-import bcrypt from "bcryptjs";
-import { db } from "../../lib/db";
-import { getUserByEmail } from "../../lib/user";
-import {
-  generateEmailVerificationToken,
-  sendEmailVerification,
-} from "../../lib/email-verification";
 
 export const signUp = async (values: RegisterSchemaType) => {
   const validateFields = RegisterSchema.safeParse(values);
@@ -38,7 +38,7 @@ export const signUp = async (values: RegisterSchemaType) => {
   });
 
   const emailVerificationToken = await generateEmailVerificationToken(email);
-  const { error } = await sendEmailVerification(
+  const { error } = await sendEmailVerificationToken(
     emailVerificationToken.email,
     emailVerificationToken.token
   );

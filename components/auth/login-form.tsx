@@ -11,6 +11,7 @@ import React, { useState, useTransition } from "react";
 import Alert from "../common/Alert";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LOGIN_REDIRECT } from "../../route";
+import Link from "next/link";
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -83,6 +84,14 @@ const LoginForm = () => {
       </Button>
       <div className="flex justify-center my-2">Or</div>
       <SocialAuth />
+      <div className="flex items-end justify-end">
+        <Link
+          className="mt-2 text-sm underline text-slate-700 dark:text-slate-300"
+          href="/password-email-form"
+        >
+          Forgot Password?
+        </Link>
+      </div>
     </form>
   );
 };

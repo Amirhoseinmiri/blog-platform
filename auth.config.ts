@@ -1,10 +1,10 @@
-import Crentials from "next-auth/providers/credentials";
+import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
-import { LoginSchema } from "./schemas/loginSchema";
 import { getUserByEmail } from "./lib/user";
-import bcrypt from "bcryptjs";
+import bcryptjs from "bcryptjs";
+import { LoginSchema } from "./schemas/loginSchema";
 
 export default {
   providers: [
@@ -16,20 +16,25 @@ export default {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-    Crentials({
+    Credentials({
       async authorize(credentials) {
-        const validatedField = LoginSchema.safeParse(credentials);
-        if (validatedField.success) {
-          const { email, password } = validatedField.data;
-          // Perform your authentication logic here
+        const validatedFields = LoginSchema.safeParse(credentials);
+
+        if (validatedFields.success) {
+          const { email, password } = validatedFields.data;
+
           const user = await getUserByEmail(email);
+
           if (!user || !user.password) return null;
-          const isCorrectPassword = await bcrypt.compare(
+
+          const isCorrectPassword = await bcryptjs.compare(
             password,
             user.password
           );
+
           if (isCorrectPassword) return user;
         }
+
         return null;
       },
     }),
